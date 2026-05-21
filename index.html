@@ -437,9 +437,9 @@ function runPrice() {
 
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 800,
       messages: [{ role: 'user', content: prompt }]
     })
@@ -448,7 +448,7 @@ function runPrice() {
   .then(function(data) {
     hide('pl');
     var txt = '';
-    if (data.content && data.content[0] && data.content[0].text) txt = data.content[0].text;
+    if (data.content && data.content[0] && data.content[0].text) { txt = data.content[0].text; }
     var start = txt.indexOf('{');
     var end = txt.lastIndexOf('}');
     if (start === -1 || end === -1) { showErr('API error: ' + txt.substring(0,200)); return; }
@@ -641,8 +641,8 @@ document.getElementById('btn-pletter').addEventListener('click', function() {
   var prompt = 'Write a short professional outreach letter for an Irish property maintenance contractor. Applicant: ' + name + '. They filed a ' + type + ' planning application for: ' + addr + '. Write 3-4 sentences introducing EASY Property Services, noting we saw their planning application, offering a free consultation and quote. Warm professional tone. No markdown, no asterisks. Sign off: EASY Property Services, Dublin/Meath.';
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
+    headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
