@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,7 +98,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 </style>
 </head>
 <body>
-
+ 
 <header>
   <div class="logo"><em>EASY</em> COMMAND CENTRE</div>
   <div class="hstats">
@@ -107,16 +108,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
   <div style="font-size:12px;color:#9DA0A4" id="hd"></div>
 </header>
-
+ 
 <nav>
   <button class="tb on" id="tab-pricer">AI Pricer</button>
   <button class="tb" id="tab-leads">Lead Log <span class="nbdg" id="lc">0</span></button>
   <button class="tb" id="tab-planning">Planning Alerts</button>
   <button class="tb" id="tab-outreach">Outreach Templates</button>
 </nav>
-
+ 
 <div class="main">
-
+ 
 <div class="pnl on" id="pnl-pricer">
   <div class="g2" style="align-items:start">
     <div>
@@ -184,7 +185,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 </div>
-
+ 
 <div class="pnl" id="pnl-leads">
   <div class="rb">
     <div class="stitle" style="margin:0">Lead Log</div>
@@ -212,7 +213,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </table>
   </div>
 </div>
-
+ 
 <div class="pnl" id="pnl-planning">
   <div class="g2" style="align-items:start;gap:20px">
     <div>
@@ -250,7 +251,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 </div>
-
+ 
 <div class="pnl" id="pnl-outreach">
   <div class="rb">
     <div class="stitle" style="margin:0">Outreach Templates</div>
@@ -278,17 +279,17 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 </div>
-
+ 
 </div>
-
+ 
 <script>
 (function() {
-
+ 
 var leads = [];
 var src = 'Facebook Groups';
 var lastRes = null;
 var selTpl = null;
-
+ 
 var TPLS = [
   {id:'t1',cat:'social',name:'First Contact — Social Media',tag:'Social Media',prev:'Hi there! Saw your post looking for...',body:'Hi [NAME]! Saw your post looking for help with [JOB TYPE]. We\'re a local property maintenance company covering Meath, Dublin & surrounding counties.\n\nWe can get someone out to have a look and give you a proper quote — no obligation. Are you still looking to get this sorted?\n\nFeel free to DM or call us directly.'},
   {id:'t2',cat:'social',name:'Fast Response — Marketplace',tag:'Marketplace',prev:'Hey, just seen your listing...',body:'Hey [NAME], just seen your listing. We cover [LOCATION] and this is exactly the type of work we do.\n\nCan have someone over to quote within 48 hours. What\'s the best way to reach you?'},
@@ -299,7 +300,7 @@ var TPLS = [
   {id:'t7',cat:'won',name:'Job Confirmed Response',tag:'Job Won',prev:'Brilliant, great to have you confirmed...',body:'Brilliant [NAME], great to have you confirmed!\n\nWe\'ll be in touch shortly with the start date and a rundown of how the job will progress.\n\nLooking forward to working with you!\nEASY Property Services'},
   {id:'t8',cat:'social',name:'Done Deal / Adverts Response',tag:'Done Deal',prev:'Hi, saw your ad looking for a contractor...',body:'Hi [NAME], saw your ad looking for a contractor for [JOB TYPE].\n\nWe\'re a fully insured local firm with experience in exactly this type of work. Happy to come out and give you a free no-obligation quote.\n\nWhat area are you in? We cover Meath, Louth, Dublin & Kildare.'}
 ];
-
+ 
 var PLAN = [
   {addr:'14 Beechwood Rd, Navan',app:'Murphy, Patrick',type:'Extension',county:'Meath'},
   {addr:'Kilmessan Cross, Kilmessan',app:'OBrien, Claire',type:'New Build',county:'Meath'},
@@ -316,19 +317,19 @@ var PLAN = [
   {addr:'12 Malahide Rd, Portmarnock',app:'Lynch, Declan',type:'Renovation',county:'Dublin'},
   {addr:'Rathfarnham Castle Est.',app:'Heritage Trust',type:'Renovation',county:'Dublin'}
 ];
-
+ 
 function loadLeads() {
   try {
     var s = localStorage.getItem('ecc2');
     if (s) leads = JSON.parse(s);
   } catch(e) { leads = []; }
 }
-
+ 
 function saveLeads() {
   try { localStorage.setItem('ecc2', JSON.stringify(leads)); } catch(e) {}
   updHdr();
 }
-
+ 
 function updHdr() {
   var tot = 0;
   var won = 0;
@@ -341,27 +342,27 @@ function updHdr() {
   setText('hw', won);
   setText('lc', leads.length);
 }
-
+ 
 function setText(id, val) {
   var el = document.getElementById(id);
   if (el) el.textContent = val;
 }
-
+ 
 function getVal(id) {
   var el = document.getElementById(id);
   return el ? el.value.trim() : '';
 }
-
+ 
 function show(id) {
   var el = document.getElementById(id);
   if (el) el.style.display = 'block';
 }
-
+ 
 function hide(id) {
   var el = document.getElementById(id);
   if (el) el.style.display = 'none';
 }
-
+ 
 function notif(msg) {
   var el = document.createElement('div');
   el.className = 'ntf';
@@ -369,7 +370,7 @@ function notif(msg) {
   document.body.appendChild(el);
   setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 2000);
 }
-
+ 
 // TABS
 var tabIds = ['pricer', 'leads', 'planning', 'outreach'];
 for (var ti = 0; ti < tabIds.length; ti++) {
@@ -378,7 +379,7 @@ for (var ti = 0; ti < tabIds.length; ti++) {
     if (btn) btn.addEventListener('click', function() { goTab(id); });
   })(tabIds[ti]);
 }
-
+ 
 function goTab(id) {
   for (var i = 0; i < tabIds.length; i++) {
     var p = document.getElementById('pnl-' + tabIds[i]);
@@ -394,7 +395,7 @@ function goTab(id) {
   if (id === 'planning') drawPlanning();
   if (id === 'outreach') drawTemplates();
 }
-
+ 
 // CHIPS
 var chipsEl = document.getElementById('chips');
 if (chipsEl) {
@@ -409,7 +410,7 @@ if (chipsEl) {
     })(chipEls[ci]);
   }
 }
-
+ 
 // PRICER BUTTONS
 var btnClear = document.getElementById('btn-clear');
 if (btnClear) btnClear.addEventListener('click', function() {
@@ -419,22 +420,22 @@ if (btnClear) btnClear.addEventListener('click', function() {
   show('pp'); hide('pl'); hide('pr'); hide('sw');
   lastRes = null;
 });
-
+ 
 var btnPrice = document.getElementById('btn-price');
 if (btnPrice) btnPrice.addEventListener('click', runPrice);
-
+ 
 var btnSave = document.getElementById('btn-save');
 if (btnSave) btnSave.addEventListener('click', saveLead);
-
+ 
 function runPrice() {
   var desc = getVal('desc');
   if (!desc) { alert('Please paste a job description first.'); return; }
   var loc = getVal('loc');
   var jt = getVal('jt');
   hide('pp'); hide('pr'); show('pl'); hide('sw');
-
+ 
   var prompt = 'You are an expert property maintenance pricing assistant for the Irish market.\n\nSource: ' + src + '\nLocation: ' + (loc || 'Ireland') + '\nJob Type Hint: ' + (jt || 'Auto-detect') + '\nJob Description: ' + desc + '\n\nRespond ONLY with a valid JSON object. No markdown, no backticks, no explanation — just the raw JSON:\n{"jobType":"string","summary":"string","complexity":"Low or Medium or High","estimatedHours":"string","labourCost":"string","materialsCost":"string","quoteLow":500,"quoteHigh":800,"urgency":"Low or Medium or High","flags":["string"],"responseMessage":"2-3 sentence professional warm response. No asterisks or markdown."}';
-
+ 
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
@@ -460,12 +461,12 @@ function runPrice() {
   })
   .catch(function() { hide('pl'); showErr('Connection error. Try again.'); });
 }
-
+ 
 function showErr(msg) {
   var el = document.getElementById('pr');
   if (el) { el.innerHTML = '<div style="color:#E74C3C;padding:20px;text-align:center">' + msg + '</div>'; el.style.display = 'block'; }
 }
-
+ 
 function showResult(r) {
   var cc = r.complexity === 'High' ? '#E74C3C' : r.complexity === 'Medium' ? '#F39C12' : '#2ECC71';
   var uc = r.urgency === 'High' ? '#E74C3C' : r.urgency === 'Medium' ? '#F39C12' : '#2ECC71';
@@ -501,7 +502,7 @@ function showResult(r) {
     if (rmsg) navigator.clipboard.writeText(rmsg.textContent).then(function() { notif('Copied!'); });
   });
 }
-
+ 
 function saveLead() {
   if (!lastRes) return;
   var r = lastRes.res;
@@ -520,11 +521,11 @@ function saveLead() {
   hide('sw');
   notif('Lead saved!');
 }
-
+ 
 // LEADS
 document.getElementById('lsrch').addEventListener('input', drawLeads);
 document.getElementById('lflt').addEventListener('change', drawLeads);
-
+ 
 function drawLeads() {
   var srch = (document.getElementById('lsrch').value || '').toLowerCase();
   var flt = document.getElementById('lflt').value;
@@ -586,10 +587,10 @@ function drawLeads() {
     })(dels[i]);
   }
 }
-
+ 
 // PLANNING
 document.getElementById('btn-pfilter').addEventListener('click', drawPlanning);
-
+ 
 function drawPlanning() {
   var co = document.getElementById('pc').value;
   var ty = document.getElementById('pt2').value;
@@ -629,7 +630,7 @@ function drawPlanning() {
   }
   document.getElementById('cb').innerHTML = bhtml;
 }
-
+ 
 document.getElementById('btn-pletter').addEventListener('click', function() {
   var name = getVal('pna');
   var addr = getVal('pad');
@@ -656,10 +657,10 @@ document.getElementById('btn-pletter').addEventListener('click', function() {
   })
   .catch(function() { po.innerHTML = '<div style="color:#E74C3C;font-size:12px;padding:8px">Error — try again.</div>'; });
 });
-
+ 
 // TEMPLATES
 document.getElementById('tflt').addEventListener('change', drawTemplates);
-
+ 
 function drawTemplates() {
   var flt = document.getElementById('tflt').value;
   var fil = [];
@@ -712,7 +713,7 @@ function drawTemplates() {
     })(cpys[i]);
   }
 }
-
+ 
 document.getElementById('btn-cpypers').addEventListener('click', function() {
   var txt = document.getElementById('pout').value;
   var n = document.getElementById('pn').value;
@@ -723,14 +724,14 @@ document.getElementById('btn-cpypers').addEventListener('click', function() {
   if (p) txt = txt.split('[PRICE]').join(p);
   navigator.clipboard.writeText(txt).then(function() { notif('Copied!'); });
 });
-
+ 
 // INIT
 loadLeads();
 updHdr();
 drawPlanning();
 drawTemplates();
 document.getElementById('hd').textContent = new Date().toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-
+ 
 })();
 </script>
 </body>
