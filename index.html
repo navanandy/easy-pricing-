@@ -439,7 +439,7 @@ function runPrice() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 800,
       messages: [{ role: 'user', content: prompt }]
     })
@@ -451,12 +451,12 @@ function runPrice() {
     if (data.content && data.content[0] && data.content[0].text) txt = data.content[0].text;
     var start = txt.indexOf('{');
     var end = txt.lastIndexOf('}');
-    if (start === -1 || end === -1) { showErr('Could not parse response. Try again.'); return; }
+    if (start === -1 || end === -1) { showErr('API error: ' + txt.substring(0,200)); return; }
     try {
       var res = JSON.parse(txt.substring(start, end + 1));
       lastRes = { res: res, desc: desc, loc: loc };
       showResult(res);
-    } catch(e) { showErr('Parse error. Try again.'); }
+    } catch(e) { showErr('Parse error: ' + e.message + ' | ' + txt.substring(0,100)); }
   })
   .catch(function() { hide('pl'); showErr('Connection error. Try again.'); });
 }
@@ -642,7 +642,7 @@ document.getElementById('btn-pletter').addEventListener('click', function() {
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
+    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
