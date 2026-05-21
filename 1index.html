@@ -97,7 +97,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo"><em>EASY</em> COMMAND CENTRE</div>
   <div class="hstats">
@@ -107,16 +106,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
   <div style="font-size:12px;color:#9DA0A4" id="hd"></div>
 </header>
-
 <nav>
   <button class="tb on" id="tab-pricer">AI Pricer</button>
   <button class="tb" id="tab-leads">Lead Log <span class="nbdg" id="lc">0</span></button>
   <button class="tb" id="tab-planning">Planning Alerts</button>
   <button class="tb" id="tab-outreach">Outreach Templates</button>
 </nav>
-
 <div class="main">
-
 <div class="pnl on" id="pnl-pricer">
   <div class="g2" style="align-items:start">
     <div>
@@ -184,7 +180,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 </div>
-
 <div class="pnl" id="pnl-leads">
   <div class="rb">
     <div class="stitle" style="margin:0">Lead Log</div>
@@ -212,7 +207,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </table>
   </div>
 </div>
-
 <div class="pnl" id="pnl-planning">
   <div class="g2" style="align-items:start;gap:20px">
     <div>
@@ -250,7 +244,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 </div>
-
 <div class="pnl" id="pnl-outreach">
   <div class="rb">
     <div class="stitle" style="margin:0">Outreach Templates</div>
@@ -278,17 +271,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 </div>
-
 </div>
-
 <script>
 (function() {
-
 var leads = [];
 var src = 'Facebook Groups';
 var lastRes = null;
 var selTpl = null;
-
 var TPLS = [
   {id:'t1',cat:'social',name:'First Contact — Social Media',tag:'Social Media',prev:'Hi there! Saw your post looking for...',body:'Hi [NAME]! Saw your post looking for help with [JOB TYPE]. We\'re a local property maintenance company covering Meath, Dublin & surrounding counties.\n\nWe can get someone out to have a look and give you a proper quote — no obligation. Are you still looking to get this sorted?\n\nFeel free to DM or call us directly.'},
   {id:'t2',cat:'social',name:'Fast Response — Marketplace',tag:'Marketplace',prev:'Hey, just seen your listing...',body:'Hey [NAME], just seen your listing. We cover [LOCATION] and this is exactly the type of work we do.\n\nCan have someone over to quote within 48 hours. What\'s the best way to reach you?'},
@@ -299,7 +288,6 @@ var TPLS = [
   {id:'t7',cat:'won',name:'Job Confirmed Response',tag:'Job Won',prev:'Brilliant, great to have you confirmed...',body:'Brilliant [NAME], great to have you confirmed!\n\nWe\'ll be in touch shortly with the start date and a rundown of how the job will progress.\n\nLooking forward to working with you!\nEASY Property Services'},
   {id:'t8',cat:'social',name:'Done Deal / Adverts Response',tag:'Done Deal',prev:'Hi, saw your ad looking for a contractor...',body:'Hi [NAME], saw your ad looking for a contractor for [JOB TYPE].\n\nWe\'re a fully insured local firm with experience in exactly this type of work. Happy to come out and give you a free no-obligation quote.\n\nWhat area are you in? We cover Meath, Louth, Dublin & Kildare.'}
 ];
-
 var PLAN = [
   {addr:'14 Beechwood Rd, Navan',app:'Murphy, Patrick',type:'Extension',county:'Meath'},
   {addr:'Kilmessan Cross, Kilmessan',app:'OBrien, Claire',type:'New Build',county:'Meath'},
@@ -316,421 +304,165 @@ var PLAN = [
   {addr:'12 Malahide Rd, Portmarnock',app:'Lynch, Declan',type:'Renovation',county:'Dublin'},
   {addr:'Rathfarnham Castle Est.',app:'Heritage Trust',type:'Renovation',county:'Dublin'}
 ];
-
-function loadLeads() {
-  try {
-    var s = localStorage.getItem('ecc2');
-    if (s) leads = JSON.parse(s);
-  } catch(e) { leads = []; }
-}
-
-function saveLeads() {
-  try { localStorage.setItem('ecc2', JSON.stringify(leads)); } catch(e) {}
-  updHdr();
-}
-
-function updHdr() {
-  var tot = 0;
-  var won = 0;
-  for (var i = 0; i < leads.length; i++) {
-    tot += (leads[i].qlo + leads[i].qhi) / 2;
-    if (leads[i].status === 'won') won++;
-  }
-  setText('hl', leads.length);
-  setText('hv', '€' + Math.round(tot).toLocaleString());
-  setText('hw', won);
-  setText('lc', leads.length);
-}
-
-function setText(id, val) {
-  var el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-function getVal(id) {
-  var el = document.getElementById(id);
-  return el ? el.value.trim() : '';
-}
-
-function show(id) {
-  var el = document.getElementById(id);
-  if (el) el.style.display = 'block';
-}
-
-function hide(id) {
-  var el = document.getElementById(id);
-  if (el) el.style.display = 'none';
-}
-
-function notif(msg) {
-  var el = document.createElement('div');
-  el.className = 'ntf';
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 2000);
-}
-
-// TABS
-var tabIds = ['pricer', 'leads', 'planning', 'outreach'];
-for (var ti = 0; ti < tabIds.length; ti++) {
-  (function(id) {
-    var btn = document.getElementById('tab-' + id);
-    if (btn) btn.addEventListener('click', function() { goTab(id); });
-  })(tabIds[ti]);
-}
-
-function goTab(id) {
-  for (var i = 0; i < tabIds.length; i++) {
-    var p = document.getElementById('pnl-' + tabIds[i]);
-    var b = document.getElementById('tab-' + tabIds[i]);
-    if (p) p.classList.remove('on');
-    if (b) b.classList.remove('on');
-  }
-  var pnl = document.getElementById('pnl-' + id);
-  var btn = document.getElementById('tab-' + id);
-  if (pnl) pnl.classList.add('on');
-  if (btn) btn.classList.add('on');
-  if (id === 'leads') drawLeads();
-  if (id === 'planning') drawPlanning();
-  if (id === 'outreach') drawTemplates();
-}
-
-// CHIPS
-var chipsEl = document.getElementById('chips');
-if (chipsEl) {
-  var chipEls = chipsEl.querySelectorAll('.chip');
-  for (var ci = 0; ci < chipEls.length; ci++) {
-    (function(chip) {
-      chip.addEventListener('click', function() {
-        for (var j = 0; j < chipEls.length; j++) chipEls[j].classList.remove('on');
-        chip.classList.add('on');
-        src = chip.getAttribute('data-src') || 'Facebook Groups';
-      });
-    })(chipEls[ci]);
-  }
-}
-
-// PRICER BUTTONS
-var btnClear = document.getElementById('btn-clear');
-if (btnClear) btnClear.addEventListener('click', function() {
-  document.getElementById('desc').value = '';
-  document.getElementById('loc').value = '';
-  document.getElementById('jt').value = '';
-  show('pp'); hide('pl'); hide('pr'); hide('sw');
-  lastRes = null;
-});
-
-var btnPrice = document.getElementById('btn-price');
-if (btnPrice) btnPrice.addEventListener('click', runPrice);
-
-var btnSave = document.getElementById('btn-save');
-if (btnSave) btnSave.addEventListener('click', saveLead);
-
-function runPrice() {
-  var desc = getVal('desc');
-  if (!desc) { alert('Please paste a job description first.'); return; }
-  var loc = getVal('loc');
-  var jt = getVal('jt');
-  hide('pp'); hide('pr'); show('pl'); hide('sw');
-
-  var prompt = 'You are an expert property maintenance pricing assistant for the Irish market.\n\nSource: ' + src + '\nLocation: ' + (loc || 'Ireland') + '\nJob Type Hint: ' + (jt || 'Auto-detect') + '\nJob Description: ' + desc + '\n\nRespond ONLY with a valid JSON object. No markdown, no backticks, no explanation — just the raw JSON:\n{"jobType":"string","summary":"string","complexity":"Low or Medium or High","estimatedHours":"string","labourCost":"string","materialsCost":"string","quoteLow":500,"quoteHigh":800,"urgency":"Low or Medium or High","flags":["string"],"responseMessage":"2-3 sentence professional warm response. No asterisks or markdown."}';
-
-  fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 800,
-      messages: [{ role: 'user', content: prompt }]
-    })
+function loadLeads(){try{var s=localStorage.getItem('ecc2');if(s)leads=JSON.parse(s);}catch(e){leads=[];}}
+function saveLeads(){try{localStorage.setItem('ecc2',JSON.stringify(leads));}catch(e){}updHdr();}
+function updHdr(){var tot=0,won=0;for(var i=0;i<leads.length;i++){tot+=(leads[i].qlo+leads[i].qhi)/2;if(leads[i].status==='won')won++;}setText('hl',leads.length);setText('hv','€'+Math.round(tot).toLocaleString());setText('hw',won);setText('lc',leads.length);}
+function setText(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+function getVal(id){var el=document.getElementById(id);return el?el.value.trim():'';}
+function show(id){var el=document.getElementById(id);if(el)el.style.display='block';}
+function hide(id){var el=document.getElementById(id);if(el)el.style.display='none';}
+function notif(msg){var el=document.createElement('div');el.className='ntf';el.textContent=msg;document.body.appendChild(el);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2000);}
+var tabIds=['pricer','leads','planning','outreach'];
+for(var ti=0;ti<tabIds.length;ti++){(function(id){var btn=document.getElementById('tab-'+id);if(btn)btn.addEventListener('click',function(){goTab(id);});})(tabIds[ti]);}
+function goTab(id){for(var i=0;i<tabIds.length;i++){var p=document.getElementById('pnl-'+tabIds[i]);var b=document.getElementById('tab-'+tabIds[i]);if(p)p.classList.remove('on');if(b)b.classList.remove('on');}var pnl=document.getElementById('pnl-'+id);var btn=document.getElementById('tab-'+id);if(pnl)pnl.classList.add('on');if(btn)btn.classList.add('on');if(id==='leads')drawLeads();if(id==='planning')drawPlanning();if(id==='outreach')drawTemplates();}
+var chipsEl=document.getElementById('chips');
+if(chipsEl){var chipEls=chipsEl.querySelectorAll('.chip');for(var ci=0;ci<chipEls.length;ci++){(function(chip){chip.addEventListener('click',function(){for(var j=0;j<chipEls.length;j++)chipEls[j].classList.remove('on');chip.classList.add('on');src=chip.getAttribute('data-src')||'Facebook Groups';});})(chipEls[ci]);}}
+var btnClear=document.getElementById('btn-clear');
+if(btnClear)btnClear.addEventListener('click',function(){document.getElementById('desc').value='';document.getElementById('loc').value='';document.getElementById('jt').value='';show('pp');hide('pl');hide('pr');hide('sw');lastRes=null;});
+var btnPrice=document.getElementById('btn-price');
+if(btnPrice)btnPrice.addEventListener('click',runPrice);
+var btnSave=document.getElementById('btn-save');
+if(btnSave)btnSave.addEventListener('click',saveLead);
+function runPrice(){
+  var desc=getVal('desc');
+  if(!desc){alert('Please paste a job description first.');return;}
+  var loc=getVal('loc');
+  var jt=getVal('jt');
+  hide('pp');hide('pr');show('pl');hide('sw');
+  var prompt='You are an expert property maintenance pricing assistant for the Irish market.\n\nSource: '+src+'\nLocation: '+(loc||'Ireland')+'\nJob Type Hint: '+(jt||'Auto-detect')+'\nJob Description: '+desc+'\n\nRespond ONLY with a valid JSON object. No markdown, no backticks, no explanation:\n{"jobType":"string","summary":"string","complexity":"Low or Medium or High","estimatedHours":"string","labourCost":"string","materialsCost":"string","quoteLow":500,"quoteHigh":800,"urgency":"Low or Medium or High","flags":["string"],"responseMessage":"2-3 sentence professional warm response. No asterisks or markdown."}';
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:800,messages:[{role:'user',content:prompt}]})
   })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
+  .then(function(r){return r.json();})
+  .then(function(data){
     hide('pl');
-    var txt = '';
-    if (data.content && data.content[0] && data.content[0].text) { txt = data.content[0].text; }
-    var start = txt.indexOf('{');
-    var end = txt.lastIndexOf('}');
-    if (start === -1 || end === -1) { showErr('API error: ' + txt.substring(0,200)); return; }
-    try {
-      var res = JSON.parse(txt.substring(start, end + 1));
-      lastRes = { res: res, desc: desc, loc: loc };
-      showResult(res);
-    } catch(e) { showErr('Parse error: ' + e.message + ' | ' + txt.substring(0,100)); }
+    var txt='';
+    if(data.content&&data.content[0]&&data.content[0].text){txt=data.content[0].text;}
+    var start=txt.indexOf('{');
+    var end=txt.lastIndexOf('}');
+    if(start===-1||end===-1){showErr('API error: '+txt.substring(0,200));return;}
+    try{var res=JSON.parse(txt.substring(start,end+1));lastRes={res:res,desc:desc,loc:loc};showResult(res);}
+    catch(e){showErr('Parse error: '+e.message);}
   })
-  .catch(function() { hide('pl'); showErr('Connection error. Try again.'); });
+  .catch(function(){hide('pl');showErr('Connection error. Try again.');});
 }
-
-function showErr(msg) {
-  var el = document.getElementById('pr');
-  if (el) { el.innerHTML = '<div style="color:#E74C3C;padding:20px;text-align:center">' + msg + '</div>'; el.style.display = 'block'; }
-}
-
-function showResult(r) {
-  var cc = r.complexity === 'High' ? '#E74C3C' : r.complexity === 'Medium' ? '#F39C12' : '#2ECC71';
-  var uc = r.urgency === 'High' ? '#E74C3C' : r.urgency === 'Medium' ? '#F39C12' : '#2ECC71';
-  var fl = '';
-  if (r.flags && r.flags.length) {
-    for (var i = 0; i < r.flags.length; i++) fl += '<div style="font-size:12px;color:#F39C12;padding:2px 0">&#9888; ' + r.flags[i] + '</div>';
-  }
-  var h = '';
-  h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">';
-  h += '<div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:20px;font-weight:700">' + (r.jobType || '') + '</div>';
-  h += '<div style="font-size:12px;color:#9DA0A4;margin-top:2px">' + (r.summary || '') + '</div></div>';
-  h += '<div style="text-align:right"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:24px;font-weight:700;color:#E8620A">&#8364;' + r.quoteLow + '&#8211;&#8364;' + r.quoteHigh + '</div>';
-  h += '<div style="font-size:11px;color:#6B6E72">Quote Range</div></div></div>';
-  h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">';
-  h += '<div style="background:#1A1B1C;border-radius:7px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)"><div style="font-size:10px;color:#6B6E72;text-transform:uppercase">Complexity</div><div style="font-size:14px;font-weight:600;color:' + cc + ';margin-top:2px">' + (r.complexity || '') + '</div></div>';
-  h += '<div style="background:#1A1B1C;border-radius:7px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)"><div style="font-size:10px;color:#6B6E72;text-transform:uppercase">Est. Hours</div><div style="font-size:14px;font-weight:600;margin-top:2px">' + (r.estimatedHours || '') + '</div></div>';
-  h += '<div style="background:#1A1B1C;border-radius:7px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)"><div style="font-size:10px;color:#6B6E72;text-transform:uppercase">Urgency</div><div style="font-size:14px;font-weight:600;color:' + uc + ';margin-top:2px">' + (r.urgency || '') + '</div></div>';
-  h += '</div>';
-  h += '<div style="margin-bottom:14px">';
-  h += '<div class="pr"><span style="color:#9DA0A4">Labour</span><span>' + (r.labourCost || '') + '</span></div>';
-  h += '<div class="pr"><span style="color:#9DA0A4">Materials</span><span>' + (r.materialsCost || '') + '</span></div>';
-  h += '<div class="pr pt"><span>Total Range</span><span>&#8364;' + r.quoteLow + '&#8211;&#8364;' + r.quoteHigh + '</span></div></div>';
-  if (fl) h += '<div style="margin-bottom:12px">' + fl + '</div>';
-  h += '<div class="aibox"><div class="aih">&#9733; Ready-to-Send Response</div>';
-  h += '<div class="aiq" id="rmsg">' + (r.responseMessage || '') + '</div>';
-  h += '<div style="margin-top:10px"><button class="btn bg sm" id="btn-cpy">Copy Message</button></div></div>';
-  var prEl = document.getElementById('pr');
-  if (prEl) { prEl.innerHTML = h; prEl.style.display = 'block'; }
+function showErr(msg){var el=document.getElementById('pr');if(el){el.innerHTML='<div style="color:#E74C3C;padding:20px;text-align:center">'+msg+'</div>';el.style.display='block';}}
+function showResult(r){
+  var cc=r.complexity==='High'?'#E74C3C':r.complexity==='Medium'?'#F39C12':'#2ECC71';
+  var uc=r.urgency==='High'?'#E74C3C':r.urgency==='Medium'?'#F39C12':'#2ECC71';
+  var fl='';if(r.flags&&r.flags.length){for(var i=0;i<r.flags.length;i++)fl+='<div style="font-size:12px;color:#F39C12;padding:2px 0">&#9888; '+r.flags[i]+'</div>';}
+  var h='';
+  h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">';
+  h+='<div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:20px;font-weight:700">'+(r.jobType||'')+'</div>';
+  h+='<div style="font-size:12px;color:#9DA0A4;margin-top:2px">'+(r.summary||'')+'</div></div>';
+  h+='<div style="text-align:right"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:24px;font-weight:700;color:#E8620A">&#8364;'+r.quoteLow+'&#8211;&#8364;'+r.quoteHigh+'</div>';
+  h+='<div style="font-size:11px;color:#6B6E72">Quote Range</div></div></div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">';
+  h+='<div style="background:#1A1B1C;border-radius:7px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)"><div style="font-size:10px;color:#6B6E72;text-transform:uppercase">Complexity</div><div style="font-size:14px;font-weight:600;color:'+cc+';margin-top:2px">'+(r.complexity||'')+'</div></div>';
+  h+='<div style="background:#1A1B1C;border-radius:7px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)"><div style="font-size:10px;color:#6B6E72;text-transform:uppercase">Est. Hours</div><div style="font-size:14px;font-weight:600;margin-top:2px">'+(r.estimatedHours||'')+'</div></div>';
+  h+='<div style="background:#1A1B1C;border-radius:7px;padding:10px 12px;border:1px solid rgba(255,255,255,0.07)"><div style="font-size:10px;color:#6B6E72;text-transform:uppercase">Urgency</div><div style="font-size:14px;font-weight:600;color:'+uc+';margin-top:2px">'+(r.urgency||'')+'</div></div>';
+  h+='</div>';
+  h+='<div style="margin-bottom:14px">';
+  h+='<div class="pr"><span style="color:#9DA0A4">Labour</span><span>'+(r.labourCost||'')+'</span></div>';
+  h+='<div class="pr"><span style="color:#9DA0A4">Materials</span><span>'+(r.materialsCost||'')+'</span></div>';
+  h+='<div class="pr pt"><span>Total Range</span><span>&#8364;'+r.quoteLow+'&#8211;&#8364;'+r.quoteHigh+'</span></div></div>';
+  if(fl)h+='<div style="margin-bottom:12px">'+fl+'</div>';
+  h+='<div class="aibox"><div class="aih">&#9733; Ready-to-Send Response</div>';
+  h+='<div class="aiq" id="rmsg">'+(r.responseMessage||'')+'</div>';
+  h+='<div style="margin-top:10px"><button class="btn bg sm" id="btn-cpy">Copy Message</button></div></div>';
+  var prEl=document.getElementById('pr');
+  if(prEl){prEl.innerHTML=h;prEl.style.display='block';}
   show('sw');
-  var cpyBtn = document.getElementById('btn-cpy');
-  if (cpyBtn) cpyBtn.addEventListener('click', function() {
-    var rmsg = document.getElementById('rmsg');
-    if (rmsg) navigator.clipboard.writeText(rmsg.textContent).then(function() { notif('Copied!'); });
-  });
+  var cpyBtn=document.getElementById('btn-cpy');
+  if(cpyBtn)cpyBtn.addEventListener('click',function(){var rmsg=document.getElementById('rmsg');if(rmsg)navigator.clipboard.writeText(rmsg.textContent).then(function(){notif('Copied!');});});
 }
-
-function saveLead() {
-  if (!lastRes) return;
-  var r = lastRes.res;
-  leads.push({
-    id: Date.now(),
-    date: new Date().toISOString(),
-    src: src,
-    desc: lastRes.desc.substring(0, 200),
-    loc: lastRes.loc || 'Unknown',
-    jtype: r.jobType || '',
-    qlo: r.quoteLow || 0,
-    qhi: r.quoteHigh || 0,
-    status: 'new'
-  });
-  saveLeads();
-  hide('sw');
-  notif('Lead saved!');
+function saveLead(){
+  if(!lastRes)return;
+  var r=lastRes.res;
+  leads.push({id:Date.now(),date:new Date().toISOString(),src:src,desc:lastRes.desc.substring(0,200),loc:lastRes.loc||'Unknown',jtype:r.jobType||'',qlo:r.quoteLow||0,qhi:r.quoteHigh||0,status:'new'});
+  saveLeads();hide('sw');notif('Lead saved!');
 }
-
-// LEADS
-document.getElementById('lsrch').addEventListener('input', drawLeads);
-document.getElementById('lflt').addEventListener('change', drawLeads);
-
-function drawLeads() {
-  var srch = (document.getElementById('lsrch').value || '').toLowerCase();
-  var flt = document.getElementById('lflt').value;
-  var fil = [];
-  for (var i = 0; i < leads.length; i++) {
-    var l = leads[i];
-    var ms = !flt || l.status === flt;
-    var mt = !srch || (l.desc || '').toLowerCase().indexOf(srch) >= 0 || (l.loc || '').toLowerCase().indexOf(srch) >= 0 || (l.jtype || '').toLowerCase().indexOf(srch) >= 0;
-    if (ms && mt) fil.push(l);
+document.getElementById('lsrch').addEventListener('input',drawLeads);
+document.getElementById('lflt').addEventListener('change',drawLeads);
+function drawLeads(){
+  var srch=(document.getElementById('lsrch').value||'').toLowerCase();
+  var flt=document.getElementById('lflt').value;
+  var fil=[];
+  for(var i=0;i<leads.length;i++){var l=leads[i];var ms=!flt||l.status===flt;var mt=!srch||(l.desc||'').toLowerCase().indexOf(srch)>=0||(l.loc||'').toLowerCase().indexOf(srch)>=0||(l.jtype||'').toLowerCase().indexOf(srch)>=0;if(ms&&mt)fil.push(l);}
+  var tot=0,won=0;
+  for(var i=0;i<leads.length;i++){tot+=(leads[i].qlo+leads[i].qhi)/2;if(leads[i].status==='won')won++;}
+  setText('st',leads.length);setText('sv','€'+Math.round(tot).toLocaleString());setText('sw2',won);setText('sc',leads.length?Math.round(won/leads.length*100)+'%':'0%');
+  var tb=document.getElementById('ltb');
+  if(!fil.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:#6B6E72">No leads found.</td></tr>';return;}
+  var html='';
+  for(var i=0;i<fil.length;i++){
+    var l=fil[i];
+    var d=new Date(l.date).toLocaleDateString('en-IE',{day:'numeric',month:'short'});
+    var bc=l.status==='new'?'bn':l.status==='quoted'?'bq':l.status==='won'?'bw':'bl';
+    html+='<tr><td style="color:#9DA0A4;font-size:12px;white-space:nowrap">'+d+'</td><td style="font-size:11px;color:#9DA0A4">'+(l.src||'')+'</td><td><div style="color:#F0F1F2;max-width:200px;font-size:12px">'+(l.desc||'').substring(0,70)+'...</div><div style="font-size:11px;color:#E8620A;margin-top:2px">'+(l.jtype||'')+'</div></td><td style="font-size:12px;color:#9DA0A4">'+(l.loc||'')+'</td><td style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:#E8620A">&#8364;'+l.qlo+'&#8211;'+l.qhi+'</td><td><span class="bdg '+bc+'">'+l.status+'</span></td><td><select class="status-sel" data-id="'+l.id+'" style="padding:4px 6px;font-size:11px;width:82px;margin-bottom:4px"><option value="new"'+(l.status==='new'?' selected':'')+'>New</option><option value="quoted"'+(l.status==='quoted'?' selected':'')+'>Quoted</option><option value="won"'+(l.status==='won'?' selected':'')+'>Won</option><option value="lost"'+(l.status==='lost'?' selected':'')+'>Lost</option></select><br><button class="btn bd sm del-btn" data-id="'+l.id+'">Del</button></td></tr>';
   }
-  var tot = 0, won = 0;
-  for (var i = 0; i < leads.length; i++) {
-    tot += (leads[i].qlo + leads[i].qhi) / 2;
-    if (leads[i].status === 'won') won++;
-  }
-  setText('st', leads.length);
-  setText('sv', '€' + Math.round(tot).toLocaleString());
-  setText('sw2', won);
-  setText('sc', leads.length ? Math.round(won / leads.length * 100) + '%' : '0%');
-  var tb = document.getElementById('ltb');
-  if (!fil.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#6B6E72">No leads found.</td></tr>'; return; }
-  var html = '';
-  for (var i = 0; i < fil.length; i++) {
-    var l = fil[i];
-    var d = new Date(l.date).toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
-    var bc = l.status === 'new' ? 'bn' : l.status === 'quoted' ? 'bq' : l.status === 'won' ? 'bw' : 'bl';
-    html += '<tr data-id="' + l.id + '">';
-    html += '<td style="color:#9DA0A4;font-size:12px;white-space:nowrap">' + d + '</td>';
-    html += '<td style="font-size:11px;color:#9DA0A4">' + (l.src || '') + '</td>';
-    html += '<td><div style="color:#F0F1F2;max-width:200px;font-size:12px">' + (l.desc || '').substring(0, 70) + '...</div><div style="font-size:11px;color:#E8620A;margin-top:2px">' + (l.jtype || '') + '</div></td>';
-    html += '<td style="font-size:12px;color:#9DA0A4">' + (l.loc || '') + '</td>';
-    html += '<td style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:#E8620A">&#8364;' + l.qlo + '&#8211;' + l.qhi + '</td>';
-    html += '<td><span class="bdg ' + bc + '">' + l.status + '</span></td>';
-    html += '<td><select class="status-sel" data-id="' + l.id + '" style="padding:4px 6px;font-size:11px;width:82px;margin-bottom:4px"><option value="new"' + (l.status === 'new' ? ' selected' : '') + '>New</option><option value="quoted"' + (l.status === 'quoted' ? ' selected' : '') + '>Quoted</option><option value="won"' + (l.status === 'won' ? ' selected' : '') + '>Won</option><option value="lost"' + (l.status === 'lost' ? ' selected' : '') + '>Lost</option></select><br><button class="btn bd sm del-btn" data-id="' + l.id + '">Del</button></td>';
-    html += '</tr>';
-  }
-  tb.innerHTML = html;
-  var sels = tb.querySelectorAll('.status-sel');
-  for (var i = 0; i < sels.length; i++) {
-    (function(sel) {
-      sel.addEventListener('change', function() {
-        var id = parseInt(sel.getAttribute('data-id'));
-        for (var j = 0; j < leads.length; j++) { if (leads[j].id === id) { leads[j].status = sel.value; break; } }
-        saveLeads(); drawLeads();
-      });
-    })(sels[i]);
-  }
-  var dels = tb.querySelectorAll('.del-btn');
-  for (var i = 0; i < dels.length; i++) {
-    (function(btn) {
-      btn.addEventListener('click', function() {
-        if (!confirm('Delete this lead?')) return;
-        var id = parseInt(btn.getAttribute('data-id'));
-        var nl = [];
-        for (var j = 0; j < leads.length; j++) { if (leads[j].id !== id) nl.push(leads[j]); }
-        leads = nl;
-        saveLeads(); drawLeads();
-      });
-    })(dels[i]);
-  }
+  tb.innerHTML=html;
+  var sels=tb.querySelectorAll('.status-sel');
+  for(var i=0;i<sels.length;i++){(function(sel){sel.addEventListener('change',function(){var id=parseInt(sel.getAttribute('data-id'));for(var j=0;j<leads.length;j++){if(leads[j].id===id){leads[j].status=sel.value;break;}}saveLeads();drawLeads();});})(sels[i]);}
+  var dels=tb.querySelectorAll('.del-btn');
+  for(var i=0;i<dels.length;i++){(function(btn){btn.addEventListener('click',function(){if(!confirm('Delete this lead?'))return;var id=parseInt(btn.getAttribute('data-id'));var nl=[];for(var j=0;j<leads.length;j++){if(leads[j].id!==id)nl.push(leads[j]);}leads=nl;saveLeads();drawLeads();});})(dels[i]);}
 }
-
-// PLANNING
-document.getElementById('btn-pfilter').addEventListener('click', drawPlanning);
-
-function drawPlanning() {
-  var co = document.getElementById('pc').value;
-  var ty = document.getElementById('pt2').value;
-  var fil = [];
-  for (var i = 0; i < PLAN.length; i++) {
-    if ((!co || PLAN[i].county === co) && (!ty || PLAN[i].type === ty)) fil.push(PLAN[i]);
-  }
-  var tc = { Extension: 'pe', 'New Build': 'pn2', Renovation: 'pr2', Commercial: 'pc' };
-  var html = '';
-  for (var i = 0; i < fil.length; i++) {
-    var p = fil[i];
-    var cls = tc[p.type] || 'pc';
-    html += '<div class="prow"><div style="color:#F0F1F2">' + p.addr + '</div><div style="color:#9DA0A4">' + p.app + '</div><div><span class="ptag ' + cls + '">' + p.type + '</span></div><div style="color:#9DA0A4">' + p.county + '</div><div><button class="btn bg sm fill-plan-btn" data-app="' + p.app + '" data-addr="' + p.addr + '" data-type="' + p.type + '">Contact</button></div></div>';
-  }
-  document.getElementById('ptb').innerHTML = html || '<div style="padding:30px;text-align:center;color:#6B6E72">No matching applications.</div>';
-  var fpbs = document.getElementById('ptb').querySelectorAll('.fill-plan-btn');
-  for (var i = 0; i < fpbs.length; i++) {
-    (function(b) {
-      b.addEventListener('click', function() {
-        var an = document.getElementById('pna'); if (an) an.value = b.getAttribute('data-app');
-        var ad = document.getElementById('pad'); if (ad) ad.value = b.getAttribute('data-addr');
-        var at = document.getElementById('pat'); if (at) at.value = b.getAttribute('data-type');
-        goTab('planning');
-      });
-    })(fpbs[i]);
-  }
-  var cnts = {};
-  for (var i = 0; i < PLAN.length; i++) cnts[PLAN[i].county] = (cnts[PLAN[i].county] || 0) + 1;
-  var entries = [];
-  for (var k in cnts) entries.push([k, cnts[k]]);
-  entries.sort(function(a, b) { return b[1] - a[1]; });
-  var mx = entries.length ? entries[0][1] : 1;
-  var bhtml = '';
-  for (var i = 0; i < entries.length; i++) {
-    var pct = Math.round(entries[i][1] / mx * 100);
-    bhtml += '<div class="cbar"><div class="cn">' + entries[i][0] + '</div><div class="ctrack"><div class="cfill" style="width:' + pct + '%"></div></div><div class="ccount">' + entries[i][1] + '</div></div>';
-  }
-  document.getElementById('cb').innerHTML = bhtml;
+document.getElementById('btn-pfilter').addEventListener('click',drawPlanning);
+function drawPlanning(){
+  var co=document.getElementById('pc').value;
+  var ty=document.getElementById('pt2').value;
+  var fil=[];
+  for(var i=0;i<PLAN.length;i++){if((!co||PLAN[i].county===co)&&(!ty||PLAN[i].type===ty))fil.push(PLAN[i]);}
+  var tc={Extension:'pe','New Build':'pn2',Renovation:'pr2',Commercial:'pc'};
+  var html='';
+  for(var i=0;i<fil.length;i++){var p=fil[i];var cls=tc[p.type]||'pc';html+='<div class="prow"><div style="color:#F0F1F2">'+p.addr+'</div><div style="color:#9DA0A4">'+p.app+'</div><div><span class="ptag '+cls+'">'+p.type+'</span></div><div style="color:#9DA0A4">'+p.county+'</div><div><button class="btn bg sm fill-plan-btn" data-app="'+p.app+'" data-addr="'+p.addr+'" data-type="'+p.type+'">Contact</button></div></div>';}
+  document.getElementById('ptb').innerHTML=html||'<div style="padding:30px;text-align:center;color:#6B6E72">No matching applications.</div>';
+  var fpbs=document.getElementById('ptb').querySelectorAll('.fill-plan-btn');
+  for(var i=0;i<fpbs.length;i++){(function(b){b.addEventListener('click',function(){var an=document.getElementById('pna');if(an)an.value=b.getAttribute('data-app');var ad=document.getElementById('pad');if(ad)ad.value=b.getAttribute('data-addr');var at=document.getElementById('pat');if(at)at.value=b.getAttribute('data-type');goTab('planning');});})(fpbs[i]);}
+  var cnts={};for(var i=0;i<PLAN.length;i++)cnts[PLAN[i].county]=(cnts[PLAN[i].county]||0)+1;
+  var entries=[];for(var k in cnts)entries.push([k,cnts[k]]);entries.sort(function(a,b){return b[1]-a[1];});
+  var mx=entries.length?entries[0][1]:1;var bhtml='';
+  for(var i=0;i<entries.length;i++){var pct=Math.round(entries[i][1]/mx*100);bhtml+='<div class="cbar"><div class="cn">'+entries[i][0]+'</div><div class="ctrack"><div class="cfill" style="width:'+pct+'%"></div></div><div class="ccount">'+entries[i][1]+'</div></div>';}
+  document.getElementById('cb').innerHTML=bhtml;
 }
-
-document.getElementById('btn-pletter').addEventListener('click', function() {
-  var name = getVal('pna');
-  var addr = getVal('pad');
-  var type = document.getElementById('pat').value;
-  if (!name || !addr) { alert('Fill in applicant name and address first.'); return; }
-  var po = document.getElementById('po');
-  po.style.display = 'block';
-  po.innerHTML = '<div class="dots" style="padding:12px"><span></span><span></span><span></span></div>';
-  var prompt = 'Write a short professional outreach letter for an Irish property maintenance contractor. Applicant: ' + name + '. They filed a ' + type + ' planning application for: ' + addr + '. Write 3-4 sentences introducing EASY Property Services, noting we saw their planning application, offering a free consultation and quote. Warm professional tone. No markdown, no asterisks. Sign off: EASY Property Services, Dublin/Meath.';
-  fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    var txt = (data.content && data.content[0]) ? data.content[0].text : 'Could not generate.';
-    po.innerHTML = '<div class="aibox"><div class="aih">Generated Letter</div><div class="aiq" id="planmsg">' + txt + '</div><div style="margin-top:10px"><button class="btn bg sm" id="btn-cpy-plan">Copy</button></div></div>';
-    var cpb = document.getElementById('btn-cpy-plan');
-    if (cpb) cpb.addEventListener('click', function() {
-      var pm = document.getElementById('planmsg');
-      if (pm) navigator.clipboard.writeText(pm.textContent).then(function() { notif('Copied!'); });
-    });
-  })
-  .catch(function() { po.innerHTML = '<div style="color:#E74C3C;font-size:12px;padding:8px">Error — try again.</div>'; });
+document.getElementById('btn-pletter').addEventListener('click',function(){
+  var name=getVal('pna');var addr=getVal('pad');var type=document.getElementById('pat').value;
+  if(!name||!addr){alert('Fill in applicant name and address first.');return;}
+  var po=document.getElementById('po');po.style.display='block';po.innerHTML='<div class="dots" style="padding:12px"><span></span><span></span><span></span></div>';
+  var prompt='Write a short professional outreach letter for an Irish property maintenance contractor. Applicant: '+name+'. They filed a '+type+' planning application for: '+addr+'. Write 3-4 sentences introducing EASY Property Services, noting we saw their planning application, offering a free consultation and quote. Warm professional tone. No markdown, no asterisks. Sign off: EASY Property Services, Dublin/Meath.';
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,messages:[{role:'user',content:prompt}]})})
+  .then(function(r){return r.json();})
+  .then(function(data){var txt=(data.content&&data.content[0])?data.content[0].text:'Could not generate.';po.innerHTML='<div class="aibox"><div class="aih">Generated Letter</div><div class="aiq" id="planmsg">'+txt+'</div><div style="margin-top:10px"><button class="btn bg sm" id="btn-cpy-plan">Copy</button></div></div>';var cpb=document.getElementById('btn-cpy-plan');if(cpb)cpb.addEventListener('click',function(){var pm=document.getElementById('planmsg');if(pm)navigator.clipboard.writeText(pm.textContent).then(function(){notif('Copied!');});});})
+  .catch(function(){po.innerHTML='<div style="color:#E74C3C;font-size:12px;padding:8px">Error — try again.</div>';});
 });
-
-// TEMPLATES
-document.getElementById('tflt').addEventListener('change', drawTemplates);
-
-function drawTemplates() {
-  var flt = document.getElementById('tflt').value;
-  var fil = [];
-  for (var i = 0; i < TPLS.length; i++) { if (!flt || TPLS[i].cat === flt) fil.push(TPLS[i]); }
-  var html = '';
-  for (var i = 0; i < fil.length; i++) {
-    var t = fil[i];
-    var on = selTpl === t.id ? ' on' : '';
-    html += '<div class="tcard' + on + '" data-id="' + t.id + '">';
-    html += '<div class="tn">' + t.name + '</div><div class="tt">' + t.tag + '</div>';
-    html += '<div class="tp">' + t.prev + '</div>';
-    html += '<div class="tbody2">' + t.body.replace(/\n/g, '<br>') + '</div>';
-    html += '<div class="tbns"><button class="btn bg sm use-tpl" data-id="' + t.id + '">Use Template</button><button class="btn bp sm cpy-tpl" data-id="' + t.id + '">Copy</button></div>';
-    html += '</div>';
-  }
-  document.getElementById('tg').innerHTML = html;
-  var cards = document.getElementById('tg').querySelectorAll('.tcard');
-  for (var i = 0; i < cards.length; i++) {
-    (function(card) {
-      card.addEventListener('click', function(e) {
-        if (e.target.tagName === 'BUTTON') return;
-        var id = card.getAttribute('data-id');
-        selTpl = selTpl === id ? null : id;
-        drawTemplates();
-      });
-    })(cards[i]);
-  }
-  var uses = document.getElementById('tg').querySelectorAll('.use-tpl');
-  for (var i = 0; i < uses.length; i++) {
-    (function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var id = btn.getAttribute('data-id');
-        for (var j = 0; j < TPLS.length; j++) {
-          if (TPLS[j].id === id) { var po = document.getElementById('pout'); if (po) po.value = TPLS[j].body; break; }
-        }
-      });
-    })(uses[i]);
-  }
-  var cpys = document.getElementById('tg').querySelectorAll('.cpy-tpl');
-  for (var i = 0; i < cpys.length; i++) {
-    (function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var id = btn.getAttribute('data-id');
-        for (var j = 0; j < TPLS.length; j++) {
-          if (TPLS[j].id === id) { navigator.clipboard.writeText(TPLS[j].body).then(function() { notif('Copied!'); }); break; }
-        }
-      });
-    })(cpys[i]);
-  }
+document.getElementById('tflt').addEventListener('change',drawTemplates);
+function drawTemplates(){
+  var flt=document.getElementById('tflt').value;
+  var fil=[];for(var i=0;i<TPLS.length;i++){if(!flt||TPLS[i].cat===flt)fil.push(TPLS[i]);}
+  var html='';
+  for(var i=0;i<fil.length;i++){var t=fil[i];var on=selTpl===t.id?' on':'';html+='<div class="tcard'+on+'" data-id="'+t.id+'"><div class="tn">'+t.name+'</div><div class="tt">'+t.tag+'</div><div class="tp">'+t.prev+'</div><div class="tbody2">'+t.body.replace(/\n/g,'<br>')+'</div><div class="tbns"><button class="btn bg sm use-tpl" data-id="'+t.id+'">Use Template</button><button class="btn bp sm cpy-tpl" data-id="'+t.id+'">Copy</button></div></div>';}
+  document.getElementById('tg').innerHTML=html;
+  var cards=document.getElementById('tg').querySelectorAll('.tcard');
+  for(var i=0;i<cards.length;i++){(function(card){card.addEventListener('click',function(e){if(e.target.tagName==='BUTTON')return;var id=card.getAttribute('data-id');selTpl=selTpl===id?null:id;drawTemplates();});})(cards[i]);}
+  var uses=document.getElementById('tg').querySelectorAll('.use-tpl');
+  for(var i=0;i<uses.length;i++){(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();var id=btn.getAttribute('data-id');for(var j=0;j<TPLS.length;j++){if(TPLS[j].id===id){var po=document.getElementById('pout');if(po)po.value=TPLS[j].body;break;}}});})(uses[i]);}
+  var cpys=document.getElementById('tg').querySelectorAll('.cpy-tpl');
+  for(var i=0;i<cpys.length;i++){(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();var id=btn.getAttribute('data-id');for(var j=0;j<TPLS.length;j++){if(TPLS[j].id===id){navigator.clipboard.writeText(TPLS[j].body).then(function(){notif('Copied!');});break;}}});})(cpys[i]);}
 }
-
-document.getElementById('btn-cpypers').addEventListener('click', function() {
-  var txt = document.getElementById('pout').value;
-  var n = document.getElementById('pn').value;
-  var j = document.getElementById('pj').value;
-  var p = document.getElementById('pp3').value;
-  if (n) txt = txt.split('[NAME]').join(n);
-  if (j) txt = txt.split('[JOB TYPE]').join(j);
-  if (p) txt = txt.split('[PRICE]').join(p);
-  navigator.clipboard.writeText(txt).then(function() { notif('Copied!'); });
+document.getElementById('btn-cpypers').addEventListener('click',function(){
+  var txt=document.getElementById('pout').value;
+  var n=document.getElementById('pn').value;
+  var j=document.getElementById('pj').value;
+  var p=document.getElementById('pp3').value;
+  if(n)txt=txt.split('[NAME]').join(n);
+  if(j)txt=txt.split('[JOB TYPE]').join(j);
+  if(p)txt=txt.split('[PRICE]').join(p);
+  navigator.clipboard.writeText(txt).then(function(){notif('Copied!');});
 });
-
-// INIT
-loadLeads();
-updHdr();
-drawPlanning();
-drawTemplates();
-document.getElementById('hd').textContent = new Date().toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-
+loadLeads();updHdr();drawPlanning();drawTemplates();
+document.getElementById('hd').textContent=new Date().toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 })();
 </script>
 </body>
